@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Upload, Brain, CheckCircle } from "lucide-react";
 import heroImage from "@/assets/hero-cv-analysis.jpg";
+import CVUploadDialog from "./CVUploadDialog";
 
 const Hero = () => {
   return (
@@ -43,11 +44,7 @@ const Hero = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" variant="hero" className="group">
-                <Upload className="mr-2 h-5 w-5" />
-                Start Analyzing CVs
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
+              <CVUploadDialog />
               <Button size="lg" variant="outline">
                 Watch Demo
               </Button>
