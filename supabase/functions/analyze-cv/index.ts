@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { cvText } = await req.json();
+    const { cvText, action = 'extract' } = await req.json();
 
     if (!cvText) {
       return new Response(
@@ -23,48 +23,75 @@ serve(async (req) => {
       );
     }
 
-    const prompt = `
-    Analiza el siguiente CV y extrae la información en formato JSON. 
-    Incluye solo los campos que encuentres con información válida.
+    let prompt = '';
+    let systemContent = '';
     
-    Formato esperado:
-    {
-      "nombre": "string",
-      "apellidos": "string", 
-      "fechaNacimiento": "YYYY-MM-DD",
-      "telefono": "string",
-      "email": "string",
-      "direccion": "string",
-      "nacionalidad": "string",
-      "experienciaLaboral": [
-        {
-          "empresa": "string",
-          "puesto": "string",
-          "fechaInicio": "YYYY-MM-DD",
-          "fechaFin": "YYYY-MM-DD",
-          "descripcion": "string"
-        }
-      ],
-      "educacion": [
-        {
-          "institucion": "string",
-          "titulo": "string",
-          "fechaInicio": "YYYY-MM-DD",
-          "fechaFin": "YYYY-MM-DD"
-        }
-      ],
-      "habilidades": ["string"],
-      "idiomas": [
-        {
-          "idioma": "string",
-          "nivel": "string"
-        }
-      ]
-    }
+    if (action === 'extract') {
+      systemContent = 'Eres un experto en análisis de CVs. Extrae la información de manera precisa y devuelve solo JSON válido sin texto adicional.';
+      prompt = `
+      Analiza el siguiente CV y extrae la información en formato JSON. 
+      Incluye solo los campos que encuentres con información válida.
+      
+      Formato esperado:
+      {
+        "nombre": "string",
+        "apellidos": "string", 
+        "fechaNacimiento": "YYYY-MM-DD",
+        "telefono": "string",
+        "email": "string",
+        "direccion": "string",
+        "nacionalidad": "string",
+        "experienciaLaboral": [
+          {
+            "empresa": "string",
+            "puesto": "string",
+            "fechaInicio": "YYYY-MM-DD",
+            "fechaFin": "YYYY-MM-DD",
+            "descripcion": "string"
+          }
+        ],
+        "educacion": [
+          {
+            "institucion": "string",
+            "titulo": "string",
+            "fechaInicio": "YYYY-MM-DD",
+            "fechaFin": "YYYY-MM-DD"
+          }
+        ],
+        "habilidades": ["string"],
+        "idiomas": [
+          {
+            "idioma": "string",
+            "nivel": "string"
+          }
+        ]
+      }
 
-    CV a analizar:
-    ${cvText}
-    `;
+      CV a analizar:
+      ${cvText}
+      `;
+    } else if (action === 'analyze') {
+      systemContent = 'Eres un experto en recursos humanos y análisis de CV. Proporciona análisis profesionales y constructivos.';
+      prompt = `
+      Analiza el siguiente CV y genera un análisis completo en formato JSON:
+      
+      {
+        "fortalezas": ["Lista de fortalezas del candidato"],
+        "debilidades": ["Áreas de mejora identificadas"],
+        "recomendaciones": ["Recomendaciones específicas para mejorar el CV"],
+        "puntuacion": {
+          "general": number (1-10),
+          "experiencia": number (1-10),
+          "educacion": number (1-10),
+          "habilidades": number (1-10)
+        },
+        "resumen": "Resumen ejecutivo del perfil profesional del candidato"
+      }
+      
+      Datos del CV:
+      ${cvText}
+      `;
+    }
 
     console.log('Sending request to OpenAI...');
 
@@ -79,7 +106,7 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: 'Eres un experto en análisis de CVs. Extrae la información de manera precisa y devuelve solo JSON válido sin texto adicional.' 
+            content: systemContent
           },
           { role: 'user', content: prompt }
         ],
@@ -107,11 +134,12 @@ serve(async (req) => {
       throw new Error('Invalid JSON response from AI');
     }
 
+    const responseData = action === 'extract' 
+      ? { success: true, data: parsedData }
+      : { success: true, analysis: parsedData };
+
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        data: parsedData 
-      }), 
+      JSON.stringify(responseData), 
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }

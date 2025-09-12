@@ -43,10 +43,25 @@ interface ExtractedData {
   }>;
 }
 
+interface CVAnalysis {
+  fortalezas: string[];
+  debilidades: string[];
+  recomendaciones: string[];
+  puntuacion: {
+    general: number;
+    experiencia: number;
+    educacion: number;
+    habilidades: number;
+  };
+  resumen: string;
+}
+
 const CVUploadDialog = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
+  const [analysis, setAnalysis] = useState<CVAnalysis | null>(null);
+  const [currentView, setCurrentView] = useState<'upload' | 'data' | 'analysis'>('upload');
   const [error, setError] = useState<string>("");
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
@@ -136,6 +151,7 @@ const CVUploadDialog = () => {
 
       if (data.success) {
         setExtractedData(data.data);
+        setCurrentView('data');
         toast({
           title: "CV Analizado Exitosamente",
           description: "Los datos han sido extraídos correctamente",
@@ -156,9 +172,52 @@ const CVUploadDialog = () => {
     }
   };
 
+  const handleAnalyzeCV = async () => {
+    if (!extractedData) return;
+    
+    setIsProcessing(true);
+    setError("");
+
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-cv', {
+        body: { 
+          cvText: JSON.stringify(extractedData),
+          action: 'analyze'
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Error al analizar el CV');
+      }
+
+      if (data.success) {
+        setAnalysis(data.analysis);
+        setCurrentView('analysis');
+        toast({
+          title: "Análisis Completado",
+          description: "El análisis del CV ha sido generado",
+        });
+      } else {
+        throw new Error(data.error || 'Error desconocido');
+      }
+    } catch (err: any) {
+      console.error('Error analyzing CV:', err);
+      setError(err.message || 'Error al analizar el CV');
+      toast({
+        title: "Error",
+        description: err.message || 'Error al analizar el CV',
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const resetForm = () => {
     setFile(null);
     setExtractedData(null);
+    setAnalysis(null);
+    setCurrentView('upload');
     setError("");
     setIsProcessing(false);
   };
@@ -183,7 +242,7 @@ const CVUploadDialog = () => {
         </DialogHeader>
         
         <div className="space-y-6">
-          {!extractedData ? (
+          {currentView === 'upload' ? (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -242,7 +301,7 @@ const CVUploadDialog = () => {
                 </Button>
               </CardContent>
             </Card>
-          ) : (
+          ) : currentView === 'data' ? (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -321,6 +380,119 @@ const CVUploadDialog = () => {
                 )}
 
                 <div className="flex gap-2">
+                  <Button onClick={resetForm} variant="outline">
+                    Analizar Otro CV
+                  </Button>
+                  <Button 
+                    onClick={handleAnalyzeCV} 
+                    disabled={isProcessing}
+                    className="flex-1"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generando Análisis...
+                      </>
+                    ) : (
+                      "Ver Análisis del CV"
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-success" />
+                  Análisis del CV
+                </CardTitle>
+                <CardDescription>
+                  Evaluación completa y recomendaciones personalizadas
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {analysis && (
+                  <>
+                    {/* Score Overview */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-4 border rounded-lg">
+                        <div className="text-2xl font-bold text-primary">{analysis.puntuacion.general}/10</div>
+                        <div className="text-sm text-muted-foreground">General</div>
+                      </div>
+                      <div className="text-center p-4 border rounded-lg">
+                        <div className="text-2xl font-bold text-primary">{analysis.puntuacion.experiencia}/10</div>
+                        <div className="text-sm text-muted-foreground">Experiencia</div>
+                      </div>
+                      <div className="text-center p-4 border rounded-lg">
+                        <div className="text-2xl font-bold text-primary">{analysis.puntuacion.educacion}/10</div>
+                        <div className="text-sm text-muted-foreground">Educación</div>
+                      </div>
+                      <div className="text-center p-4 border rounded-lg">
+                        <div className="text-2xl font-bold text-primary">{analysis.puntuacion.habilidades}/10</div>
+                        <div className="text-sm text-muted-foreground">Habilidades</div>
+                      </div>
+                    </div>
+
+                    {/* Summary */}
+                    <div>
+                      <h3 className="font-semibold mb-3">Resumen</h3>
+                      <p className="text-muted-foreground leading-relaxed">{analysis.resumen}</p>
+                    </div>
+
+                    {/* Strengths */}
+                    {analysis.fortalezas && analysis.fortalezas.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold mb-3 text-green-600">Fortalezas</h3>
+                        <ul className="space-y-2">
+                          {analysis.fortalezas.map((strength, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm">{strength}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Weaknesses */}
+                    {analysis.debilidades && analysis.debilidades.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold mb-3 text-orange-600">Áreas de Mejora</h3>
+                        <ul className="space-y-2">
+                          {analysis.debilidades.map((weakness, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <AlertCircle className="h-4 w-4 text-orange-600 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm">{weakness}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Recommendations */}
+                    {analysis.recomendaciones && analysis.recomendaciones.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold mb-3 text-blue-600">Recomendaciones</h3>
+                        <ul className="space-y-2">
+                          {analysis.recomendaciones.map((recommendation, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <svg className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                              </svg>
+                              <span className="text-sm">{recommendation}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                <div className="flex gap-2">
+                  <Button onClick={() => setCurrentView('data')} variant="outline">
+                    Ver Datos
+                  </Button>
                   <Button onClick={resetForm} variant="outline">
                     Analizar Otro CV
                   </Button>
