@@ -110,6 +110,7 @@ serve(async (req) => {
           },
           { role: 'user', content: prompt }
         ],
+        response_format: { type: 'json_object' },
         max_completion_tokens: 2000,
       }),
     });
@@ -123,14 +124,24 @@ serve(async (req) => {
     const data = await response.json();
     console.log('OpenAI response received');
     
-    const extractedData = data.choices[0].message.content;
-    
-    // Try to parse the JSON response
+    const raw = data.choices?.[0]?.message?.content ?? '';
+
+    // Normalize to raw JSON (strip code fences and extract the JSON object)
+    let cleaned = raw.trim()
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/```$/i, '')
+      .replace(/```/g, '')
+      .trim();
+
+    const braceMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (braceMatch) cleaned = braceMatch[0];
+
     let parsedData;
     try {
-      parsedData = JSON.parse(extractedData);
+      parsedData = JSON.parse(cleaned);
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response as JSON:', extractedData);
+      console.error('Failed to parse OpenAI response as JSON:', raw);
       throw new Error('Invalid JSON response from AI');
     }
 
