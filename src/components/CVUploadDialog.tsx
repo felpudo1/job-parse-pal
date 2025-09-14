@@ -19,6 +19,7 @@ interface ExtractedData {
   nombre?: string;
   apellidos?: string;
   fechaNacimiento?: string;
+  edad?: number;
   telefono?: string;
   email?: string;
   direccion?: string;
@@ -336,6 +337,10 @@ const CVUploadDialog = () => {
                     <div>
                       <Label>Fecha de Nacimiento</Label>
                       <Input value={extractedData.fechaNacimiento || ""} readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label>Edad</Label>
+                      <Input value={extractedData.edad ? `${extractedData.edad} años` : ""} readOnly className="mt-1" />
                     </div>
                     <div>
                       <Label>Nacionalidad</Label>

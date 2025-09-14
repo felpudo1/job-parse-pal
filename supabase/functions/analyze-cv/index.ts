@@ -37,6 +37,7 @@ serve(async (req) => {
         "nombre": "string",
         "apellidos": "string", 
         "fechaNacimiento": "YYYY-MM-DD",
+        "edad": number,
         "telefono": "string",
         "email": "string",
         "direccion": "string",
