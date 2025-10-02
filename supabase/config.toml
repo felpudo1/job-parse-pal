@@ -1,1 +1,4 @@
-project_id = "imdppilgkmsxqbmdccea"
+project_id = "sblurevkequseuxdbwmj"
+
+[functions.analyze-cv]
+verify_jwt = false
