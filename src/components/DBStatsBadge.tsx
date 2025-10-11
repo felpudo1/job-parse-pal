@@ -5,7 +5,7 @@ import { Database, Circle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const DBStatsBadge = () => {
-  const { data: stats } = useQuery({
+  const { data: stats, error, isLoading } = useQuery({
     queryKey: ['cv-stats'],
     queryFn: async () => {
       const { count, error } = await (supabase as any)
@@ -37,14 +37,22 @@ const DBStatsBadge = () => {
       onClick={handleClick}
     >
       <div className="flex items-center gap-1">
-        <Circle className="h-2 w-2 fill-green-500 text-green-500 animate-pulse" />
-        <span className="text-xs font-medium">Online</span>
+        <Circle className={`h-2 w-2 ${
+          error 
+            ? 'fill-red-500 text-red-500' 
+            : isLoading 
+            ? 'fill-yellow-500 text-yellow-500 animate-pulse' 
+            : 'fill-green-500 text-green-500 animate-pulse'
+        }`} />
+        <span className="text-xs font-medium">
+          {error ? 'Error' : isLoading ? 'Conectando...' : 'Online'}
+        </span>
       </div>
       <div className="h-3 w-px bg-border" />
       <div className="flex items-center gap-1.5">
         <Database className="h-3 w-3" />
         <span className="text-xs font-medium">
-          {stats !== undefined ? `${stats} CVs` : '...'}
+          {error ? 'Sin BD' : stats !== undefined ? `${stats} CVs` : '...'}
         </span>
       </div>
     </Badge>
