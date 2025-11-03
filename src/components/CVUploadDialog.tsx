@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, FileText, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,6 +66,7 @@ const CVUploadDialog = () => {
   const [currentView, setCurrentView] = useState<'upload' | 'data' | 'analysis'>('upload');
   const [error, setError] = useState<string>("");
   const [open, setOpen] = useState(false);
+  const [selectedLLM, setSelectedLLM] = useState<'gemini' | 'perplexity'>('gemini');
   const { toast } = useToast();
 
   const extractTextFromPDF = async (file: File): Promise<string> => {
@@ -143,7 +145,7 @@ const CVUploadDialog = () => {
 
       // Call the edge function to analyze the CV
       const { data, error } = await supabase.functions.invoke('analyze-cv', {
-        body: { cvText }
+        body: { cvText, llm: selectedLLM }
       });
 
       if (error) {
@@ -183,7 +185,8 @@ const CVUploadDialog = () => {
       const { data, error } = await supabase.functions.invoke('analyze-cv', {
         body: { 
           cvText: JSON.stringify(extractedData),
-          action: 'analyze'
+          action: 'analyze',
+          llm: selectedLLM
         }
       });
 
@@ -264,6 +267,19 @@ const CVUploadDialog = () => {
                     onChange={handleFileChange}
                     className="mt-1"
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="llm-select">Modelo de IA</Label>
+                  <Select value={selectedLLM} onValueChange={(value: 'gemini' | 'perplexity') => setSelectedLLM(value)}>
+                    <SelectTrigger id="llm-select" className="mt-1">
+                      <SelectValue placeholder="Selecciona un modelo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="gemini">Gemini (Google)</SelectItem>
+                      <SelectItem value="perplexity">Perplexity AI</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 {file && (

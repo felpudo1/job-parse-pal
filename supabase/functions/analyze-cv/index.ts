@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,7 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    const { cvText, action = 'extract' } = await req.json();
+    const { cvText, action = 'extract', llm = 'gemini' } = await req.json();
 
     if (!cvText) {
       return new Response(
@@ -94,23 +95,41 @@ serve(async (req) => {
       `;
     }
 
-    console.log('Sending request to Lovable AI (Gemini)...');
+    console.log(`Sending request to ${llm === 'perplexity' ? 'Perplexity' : 'Lovable AI (Gemini)'}...`);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemContent },
-          { role: 'user', content: prompt }
-        ],
-        stream: false,
-      }),
-    });
+    let response;
+    if (llm === 'perplexity') {
+      response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${perplexityApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-sonar-small-128k-online',
+          messages: [
+            { role: 'system', content: systemContent },
+            { role: 'user', content: prompt }
+          ],
+        }),
+      });
+    } else {
+      response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemContent },
+            { role: 'user', content: prompt }
+          ],
+          stream: false,
+        }),
+      });
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -160,7 +179,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error'
       }), 
       {
         status: 500,
