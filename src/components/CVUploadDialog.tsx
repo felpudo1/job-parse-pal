@@ -13,8 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import mammoth from 'mammoth';
 
-// Set PDF.js worker
-GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+// Set PDF.js worker - using version 4.0.379 which is compatible with pdfjs-dist v10.x
+GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js`;
 
 interface ExtractedData {
   nombre?: string;
