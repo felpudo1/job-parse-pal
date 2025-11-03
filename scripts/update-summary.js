@@ -5,14 +5,20 @@
  * Se ejecuta después de cada cambio significativo en el proyecto
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+// Para replicar __dirname en ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Función para obtener información del proyecto
 function getProjectInfo() {
   const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-  const gitStatus = require('child_process').execSync('git status --porcelain', { encoding: 'utf8' });
-  const lastCommit = require('child_process').execSync('git log -1 --format="%H|%s|%ad" --date=short', { encoding: 'utf8' });
+  const gitStatus = execSync('git status --porcelain', { encoding: 'utf8' });
+  const lastCommit = execSync('git log -1 --format="%H|%s|%ad" --date=short', { encoding: 'utf8' });
   
   return {
     name: packageJson.name,
@@ -77,7 +83,7 @@ function analyzeProjectStructure() {
 // Función para verificar el estado del servidor
 function checkServerStatus() {
   try {
-    const netstat = require('child_process').execSync('netstat -an | findstr :8080', { encoding: 'utf8' });
+    const netstat = execSync('netstat -an | findstr :8080', { encoding: 'utf8' });
     const isRunning = netstat.includes('LISTENING');
     return {
       running: isRunning,
@@ -234,7 +240,7 @@ function generateSummary() {
 ## 🔧 **Recomendaciones de Mejora**
 
 ### **Críticas (Prioridad Alta)**
-1. **${database.hasTables ? '✅ BD configurada' : 'Crear esquema de BD'**: Tablas cv_analyses, users, sessions
+1. **${database.hasTables ? '✅ BD configurada' : 'Crear esquema de BD'}**: Tablas cv_analyses, users, sessions
 2. **Variables de entorno**: Mover claves a .env
 3. **Testing suite**: Jest + Testing Library
 4. **Validación de datos**: Zod schemas
@@ -294,8 +300,12 @@ ${projectInfo.gitStatus.length > 0 ? projectInfo.gitStatus.map(change => `- ${ch
   return summary;
 }
 
-// Ejecutar el script
-if (require.main === module) {
+// Ejecutar el script solo si es el módulo principal
+// En ES Modules, verificamos si el script fue ejecutado directamente
+// Comparamos la ruta absoluta del script con process.argv[1]
+const isMainModule = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+
+if (isMainModule) {
   try {
     const summary = generateSummary();
     fs.writeFileSync('SUMMARY.md', summary);
@@ -306,4 +316,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { generateSummary };
+export { generateSummary };
