@@ -9,15 +9,10 @@ import { Upload, FileText, Loader2, CheckCircle, AlertCircle } from "lucide-reac
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-// Import PDF and DOCX libraries
-import * as pdfjsLib from 'pdfjs-dist';
+// Import DOCX library
 import mammoth from 'mammoth';
 
-// Set PDF.js worker to use the local package worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+// PDF.js se cargará dinámicamente para compatibilidad con Vercel
 
 interface ExtractedData {
   nombre?: string;
@@ -73,6 +68,25 @@ const CVUploadDialog = () => {
   const { toast } = useToast();
 
   const extractTextFromPDF = async (file: File): Promise<string> => {
+    // Cargar PDF.js desde CDN para evitar problemas de bundling con Vite
+    // @ts-ignore - PDF.js se carga globalmente
+    if (!window.pdfjsLib) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs';
+        script.type = 'module';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+    
+    // @ts-ignore - PDF.js cargado globalmente
+    const pdfjsLib = window.pdfjsLib || (await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.mjs'));
+    
+    // Configurar worker desde CDN
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.mjs`;
+    
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     let text = '';
