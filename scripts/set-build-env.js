@@ -14,14 +14,27 @@ import { writeFileSync } from 'fs';
 import { join } from 'path';
 
 try {
-  // Obtener hash del commit actual (corto)
-  const commitHash = execSync('git log -1 --format=%h', { encoding: 'utf-8' }).trim();
+  let commitHash = 'local-dev';
+  let gitBranch = 'main';
+  
+  // Intentar obtener hash del commit actual (corto)
+  try {
+    commitHash = execSync('git log -1 --format=%h', { encoding: 'utf-8' }).trim();
+  } catch {
+    // Si git no está disponible, usar variable de entorno de Vercel
+    commitHash = process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) || 'vercel-build';
+  }
   
   // Obtener fecha y hora actual en formato ISO
   const buildDate = new Date().toISOString();
   
-  // Obtener rama actual
-  const gitBranch = execSync('git branch --show-current', { encoding: 'utf-8' }).trim() || 'main';
+  // Intentar obtener rama actual
+  try {
+    gitBranch = execSync('git branch --show-current', { encoding: 'utf-8' }).trim() || 'main';
+  } catch {
+    // Si git no está disponible, usar variable de entorno de Vercel
+    gitBranch = process.env.VERCEL_GIT_COMMIT_REF || 'main';
+  }
   
   // Contenido del archivo .env.local
   const envContent = `# Auto-generated build variables - Do not edit manually
@@ -44,9 +57,9 @@ VITE_GIT_BRANCH=${gitBranch}
   
   // Establecer valores por defecto en caso de error
   const fallbackContent = `# Build variables (fallback)
-VITE_COMMIT_HASH=local-dev
+VITE_COMMIT_HASH=vercel-build
 VITE_BUILD_DATE=${new Date().toISOString()}
-VITE_GIT_BRANCH=unknown
+VITE_GIT_BRANCH=main
 `;
   
   const envPath = join(process.cwd(), '.env.local');
