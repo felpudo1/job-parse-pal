@@ -2,8 +2,13 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://sblurevkequseuxdbwmj.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNibHVyZXZrZXF1c2V1eGRid21qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNzY4OTAsImV4cCI6MjA3NDk1Mjg5MH0.n7-BA-ATcdPCZccSIJwer0bRe8QuN5xEUPCFq3uMlFo";
+// Credenciales hardcodeadas originales (comentadas para usar .env)
+// const SUPABASE_URL = "https://sblurevkequseuxdbwmj.supabase.co";
+// const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNibHVyZXZrZXJ1c2V1eGRid21qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNzY4OTAsImV4cCI6MjA3NDk1Mjg5MH0.n7-BA-ATcdPCZccSIJwer0bRe8QuN5xEUPCFq3uMlFo";
+
+// Configuración usando variables de entorno del .env
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

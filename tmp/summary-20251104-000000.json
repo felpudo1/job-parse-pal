@@ -1,0 +1,5 @@
+{
+  "summary": "JP solicitó build para Vercel. Se ejecutó exitosamente 'pnpm run build' generando dist/ en 44.69s. Se detectó warning de performance por chunk grande (1.4MB). Luego JP consultó sobre manejo de variables de entorno para APIs de AI. Se identificó que el .env existía con variables correctas, pero client.ts tenía credenciales hardcodeadas. Se actualizó client.ts para usar import.meta.env manteniendo las líneas originales comentadas como referencia. Backend ya usaba correctamente Deno.env.get() para LOVABLE_API_KEY y PERPLEXITY_API_KEY.",
+  "current_status": "Build de producción completado y listo para Vercel. Variables de entorno configuradas correctamente: Backend usa Deno.env.get(), Frontend usa import.meta.env. Archivo .env existe con VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY y VITE_SUPABASE_PROJECT_ID. Client.ts actualizado para leer del .env. Próximo paso: configurar variables de entorno en dashboard de Vercel para deployment."
+}
+

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { FileText, Menu, X } from "lucide-react";
 import { useState } from "react";
 import DBStatsBadge from "./DBStatsBadge";
+import GitVersionBadge from "./GitVersionBadge";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,6 +20,7 @@ const Header = () => {
               <span className="text-xl font-bold text-foreground">CVAnalyzer</span>
             </div>
             <DBStatsBadge />
+            <GitVersionBadge />
           </div>
 
           {/* Desktop Navigation */}
