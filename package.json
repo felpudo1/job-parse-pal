@@ -12,7 +12,10 @@
     "preview": "vite preview",
     "summary": "node scripts/update-summary.js",
     "postdev": "node scripts/update-summary.js",
-    "postbuild": "node scripts/update-summary.js"
+    "postbuild": "node scripts/update-summary.js",
+    "backup": "node scripts/backup-database.js full",
+    "backup:schema": "node scripts/backup-database.js schema",
+    "backup:data": "node scripts/backup-database.js data"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
