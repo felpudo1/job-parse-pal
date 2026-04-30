@@ -14,7 +14,233 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cv_analyses: {
+        Row: {
+          apellidos: string | null
+          created_at: string
+          debilidades: string[] | null
+          direccion: string | null
+          edad: number | null
+          email: string | null
+          fecha_nacimiento: string | null
+          file_name: string
+          file_type: string
+          fortalezas: string[] | null
+          id: string
+          nacionalidad: string | null
+          nombre: string | null
+          puntuacion_general: number | null
+          recomendaciones: string[] | null
+          telefono: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          apellidos?: string | null
+          created_at?: string
+          debilidades?: string[] | null
+          direccion?: string | null
+          edad?: number | null
+          email?: string | null
+          fecha_nacimiento?: string | null
+          file_name: string
+          file_type: string
+          fortalezas?: string[] | null
+          id?: string
+          nacionalidad?: string | null
+          nombre?: string | null
+          puntuacion_general?: number | null
+          recomendaciones?: string[] | null
+          telefono?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          apellidos?: string | null
+          created_at?: string
+          debilidades?: string[] | null
+          direccion?: string | null
+          edad?: number | null
+          email?: string | null
+          fecha_nacimiento?: string | null
+          file_name?: string
+          file_type?: string
+          fortalezas?: string[] | null
+          id?: string
+          nacionalidad?: string | null
+          nombre?: string | null
+          puntuacion_general?: number | null
+          recomendaciones?: string[] | null
+          telefono?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      education: {
+        Row: {
+          created_at: string
+          cv_analysis_id: string
+          fecha_fin: string | null
+          fecha_inicio: string | null
+          id: string
+          institucion: string
+          titulo: string
+        }
+        Insert: {
+          created_at?: string
+          cv_analysis_id: string
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          id?: string
+          institucion: string
+          titulo: string
+        }
+        Update: {
+          created_at?: string
+          cv_analysis_id?: string
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          id?: string
+          institucion?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "education_cv_analysis_id_fkey"
+            columns: ["cv_analysis_id"]
+            isOneToOne: false
+            referencedRelation: "cv_analyses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      languages: {
+        Row: {
+          created_at: string
+          cv_analysis_id: string
+          id: string
+          idioma: string
+          nivel: string
+        }
+        Insert: {
+          created_at?: string
+          cv_analysis_id: string
+          id?: string
+          idioma: string
+          nivel: string
+        }
+        Update: {
+          created_at?: string
+          cv_analysis_id?: string
+          id?: string
+          idioma?: string
+          nivel?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "languages_cv_analysis_id_fkey"
+            columns: ["cv_analysis_id"]
+            isOneToOne: false
+            referencedRelation: "cv_analyses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      skills: {
+        Row: {
+          created_at: string
+          cv_analysis_id: string
+          id: string
+          skill: string
+        }
+        Insert: {
+          created_at?: string
+          cv_analysis_id: string
+          id?: string
+          skill: string
+        }
+        Update: {
+          created_at?: string
+          cv_analysis_id?: string
+          id?: string
+          skill?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skills_cv_analysis_id_fkey"
+            columns: ["cv_analysis_id"]
+            isOneToOne: false
+            referencedRelation: "cv_analyses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_experiences: {
+        Row: {
+          created_at: string
+          cv_analysis_id: string
+          descripcion: string | null
+          empresa: string
+          fecha_fin: string | null
+          fecha_inicio: string | null
+          id: string
+          puesto: string
+        }
+        Insert: {
+          created_at?: string
+          cv_analysis_id: string
+          descripcion?: string | null
+          empresa: string
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          id?: string
+          puesto: string
+        }
+        Update: {
+          created_at?: string
+          cv_analysis_id?: string
+          descripcion?: string | null
+          empresa?: string
+          fecha_fin?: string | null
+          fecha_inicio?: string | null
+          id?: string
+          puesto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_experiences_cv_analysis_id_fkey"
+            columns: ["cv_analysis_id"]
+            isOneToOne: false
+            referencedRelation: "cv_analyses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
