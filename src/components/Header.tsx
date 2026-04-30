@@ -1,11 +1,16 @@
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, X } from "lucide-react";
+import { FileText, Menu, X, LogOut, Settings } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import DBStatsBadge from "./DBStatsBadge";
 import GitVersionBadge from "./GitVersionBadge";
+import { useAuth, useIsAdmin } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
+  const { isAdmin } = useIsAdmin(user?.id);
 
   return (
     <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b border-border">
@@ -37,8 +42,19 @@ const Header = () => {
           </nav>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost">Sign In</Button>
+          <div className="hidden md:flex items-center space-x-2">
+            {isAdmin && (
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/admin/prompts"><Settings className="mr-1 h-4 w-4" />Admin</Link>
+              </Button>
+            )}
+            {user ? (
+              <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()}>
+                <LogOut className="mr-1 h-4 w-4" />Salir
+              </Button>
+            ) : (
+              <Button variant="ghost" asChild><Link to="/auth">Sign In</Link></Button>
+            )}
             <Button variant="hero">Get Started</Button>
           </div>
 
