@@ -5,7 +5,7 @@
 - **Versión**: 0.0.0
 - **Tipo**: Aplicación web para análisis de CVs
 - **Tecnologías**: React + TypeScript + Vite + Supabase
-- **Última Actualización**: 27/08/2026, 15:48
+- **Última Actualización**: 27/08/2026, 17:29
 - **Estado**: DETENIDO
 
 ## 🏗️ **Arquitectura Técnica**
@@ -142,7 +142,7 @@
 ## 🔄 **Historial de Cambios**
 
 ### **Última Actualización**
-- **Fecha**: 27/08/2026, 15:48
+- **Fecha**: 27/08/2026, 17:29
 - **Servidor**: DETENIDO
 - **Base de Datos**: INCOMPLETO
 - **Archivos modificados**: 0
@@ -153,5 +153,5 @@
 ---
 
 **Generado automáticamente por**: Claude 3.5 Sonnet 🐓  
-**Fecha**: 27/08/2026, 15:48  
+**Fecha**: 27/08/2026, 17:29  
 **Estado**: Proyecto detenido - necesita reiniciar servidor

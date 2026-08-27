@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -66,6 +66,7 @@ const CVUploadDialog = () => {
   const [open, setOpen] = useState(false);
   const [selectedLLM, setSelectedLLM] = useState<'gemini' | 'perplexity'>('gemini');
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const extractTextFromPDF = async (file: File): Promise<string> => {
     // Cargar PDF.js desde CDN para evitar problemas de bundling con Vite
