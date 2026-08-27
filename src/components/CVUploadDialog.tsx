@@ -276,14 +276,52 @@ const CVUploadDialog = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="cv-file">Seleccionar archivo</Label>
-                  <Input
-                    id="cv-file"
-                    type="file"
-                    accept=".pdf,.docx,.txt"
-                    onChange={handleFileChange}
-                    className="mt-1"
-                  />
+                  <Label>Seleccionar archivo</Label>
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.classList.add("border-primary", "bg-primary/5");
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove("border-primary", "bg-primary/5");
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.classList.remove("border-primary", "bg-primary/5");
+                      const droppedFile = e.dataTransfer.files?.[0];
+                      if (droppedFile) {
+                        const allowedTypes = [
+                          "application/pdf",
+                          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                          "text/plain"
+                        ];
+                        if (!allowedTypes.includes(droppedFile.type)) {
+                          setError("Formato de archivo no soportado. Use PDF, DOCX o TXT.");
+                          return;
+                        }
+                        setFile(droppedFile);
+                        setError("");
+                        setExtractedData(null);
+                      }
+                    }}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="mt-1 flex flex-col items-center justify-center gap-2 p-8 border-2 border-dashed border-muted-foreground/30 rounded-lg cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors group"
+                  >
+                    <div className="rounded-full bg-primary/10 p-3 group-hover:bg-primary/20 transition-colors">
+                      <Upload className="h-6 w-6 text-primary" />
+                    </div>
+                    <p className="text-sm font-medium text-foreground">
+                      Hacé clic para seleccionar o arrastrá tu CV aquí
+                    </p>
+                    <p className="text-xs text-muted-foreground">PDF, DOCX o TXT (máximo 10MB)</p>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,.docx,.txt"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                  </div>
                 </div>
 
                 <div>
