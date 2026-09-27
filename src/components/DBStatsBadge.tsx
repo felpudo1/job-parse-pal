@@ -5,7 +5,7 @@ import { Database, Circle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const DBStatsBadge = () => {
-  const { data: stats, error, isLoading } = useQuery({
+  const { data: stats, error } = useQuery({
     queryKey: ['cv-stats'],
     queryFn: async () => {
       const { count, error } = await (supabase as any)
