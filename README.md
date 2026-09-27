@@ -1,73 +1,180 @@
-# Welcome to your Lovable project
+# 🧠 Job Parse Pal
 
-## Project info
+Aplicación web para **subir, extraer y analizar CVs** con inteligencia artificial. Subí un CV en PDF, DOCX o TXT, elegí el LLM que querés usar y obtené datos estructurados (nombre, edad, contacto, experiencia, educación, habilidades e idiomas) más un análisis completo con fortalezas, debilidades y puntuaciones.
 
-**URL**: https://lovable.dev/projects/fed6181a-222d-4ff8-9ec3-cc5df76247c2
+---
 
-## How can I edit this code?
+## ✨ Funcionalidades
 
-There are several ways of editing your application.
+- **Autenticación** — Registro e inicio de sesión con Supabase Auth. Cada usuario guardado ve solo sus propios análisis (RLS).
+- **Subida de CV** — Drag & drop con validación de formato (PDF / DOCX / TXT).
+- **Extracción de datos** — El texto se extrae en el navegador con `pdfjs-dist` (PDF) y `mammoth` (DOCX).
+- **Análisis con IA** — Edge Function que procesa el texto y devuelve JSON estructurado.
+- **Selector de LLM** — Elegí entre OpenAI (GPT-4o-mini) o Perplexity (`sonar`) al analizar.
+- **Prompts personalizables** — Los administradores pueden editar las plantillas de análisis desde la vista Admin; los usuarios pueden agregar sus propios requerimientos al análisis.
+- **Persistencia** — Los análisis de usuarios registrados se guardan en Supabase con sus detalles (experiencias, educación, skills, idiomas). Los invitados pueden analizar sin cuenta.
+- **UI moderna** — Tema púrpura con tokens semánticos, componentes Shadcn/ui, responsive (desktop, tablet, mobile).
+- **Badge de estado de BD** — Visible solo cuando falla la conexión; al hacer clic muestra info del entorno.
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/fed6181a-222d-4ff8-9ec3-cc5df76247c2) and start prompting.
+## 🛠️ Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+| Capa | Tecnología |
+|------|-----------|
+| Frontend | React 18 + TypeScript 5.9 + Vite 5 |
+| Estilos | Tailwind CSS 3.4 + Shadcn/ui (Radix) + Lucide |
+| Estado / datos | TanStack Query (React Query) |
+| Formularios | react-hook-form + zod |
+| Backend | Supabase (PostgreSQL + Auth + Edge Functions) |
+| IA | OpenAI GPT-4o-mini · Perplexity `sonar` · Lovable AI (fallback) |
+| Package manager | pnpm 10 |
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🚀 Puesta en marcha
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Requisitos
 
-Follow these steps:
+- Node.js ≥ 18
+- pnpm ≥ 9 (`corepack enable` o `npm i -g pnpm`)
+
+### Instalación
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# 1. Clonar el repositorio
+git clone <URL_DEL_REPO>
+cd job-parse-pal
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# 2. Instalar dependencias
+pnpm install
 
-# Step 3: Install the necessary dependencies.
-npm i
+# 3. Configurar variables de entorno
+cp .env.example .env   # o crear .env manualmente (ver sección abajo)
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+# 4. Levantar el dev server
+pnpm dev
 ```
 
-**Edit a file directly in GitHub**
+La app corre en `http://localhost:8080`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Variables de entorno
 
-**Use GitHub Codespaces**
+Crear un archivo `.env` en la raíz:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```sh
+VITE_SUPABASE_URL=https://<project-id>.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=<anon-key>
+VITE_SUPABASE_PROJECT_ID=<project-id>
+```
 
-## What technologies are used for this project?
+> ⚠️ Las claves de OpenAI y Perplexity **no** viven en el frontend: se configuran como secretos de la Edge Function (`OPENAI_API_KEY`, `PERPLEXITY_API_KEY`).
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🗄️ Base de datos (Supabase)
 
-## How can I deploy this project?
+Tablas principales (todas con RLS habilitado):
 
-Simply open [Lovable](https://lovable.dev/projects/fed6181a-222d-4ff8-9ec3-cc5df76247c2) and click on Share -> Publish.
+| Tabla | Descripción |
+|-------|-------------|
+| `profiles` | Perfil de usuario (se crea por trigger al registrarse) |
+| `user_roles` | Roles (`admin`, `moderator`, `user`) — separados del perfil por seguridad |
+| `cv_analyses` | Un registro por CV analizado, asociado a `user_id` |
+| `work_experiences` | Experiencia laboral extraída |
+| `education` | Formación académica extraída |
+| `skills` | Habilidades extraídas |
+| `languages` | Idiomas extraídos |
+| `prompt_templates` | Plantillas de prompts editables por administradores |
 
-## Can I connect a custom domain to my Lovable project?
+- **RLS**: cada usuario solo lee/escribe sus propios CVs; los admin tienen acceso completo vía la función `has_role()`.
+- Si creás tablas nuevas, recordá los `GRANT` para `authenticated` / `service_role` en la misma migración.
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## ⚡ Edge Function: `analyze-cv`
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Ubicada en `supabase/functions/analyze-cv/`. Flujo:
+
+```
+Frontend (extrae texto del archivo)
+        │  POST /functions/v1/analyze-cv
+        ▼
+Edge Function
+  ├── Lee la plantilla de prompt activa (prompt_templates)
+  ├── Aplica requerimientos personalizados del usuario (si existen)
+  ├── Llama al LLM elegido (OpenAI o Perplexity)
+  └── Devuelve JSON estructurado
+        │
+        ▼
+Frontend muestra resultados y persiste en Supabase (si hay sesión)
+```
+
+Desplegar la función:
+
+```sh
+supabase functions deploy analyze-cv
+```
+
+---
+
+## 📜 Scripts disponibles
+
+| Comando | Descripción |
+|---------|-------------|
+| `pnpm dev` | Dev server con hot reload (puerto 8080) |
+| `pnpm build` | Build de producción |
+| `pnpm lint` | Lint con ESLint |
+| `pnpm preview` | Servir el build localmente |
+| `pnpm summary` | Regenera `SUMMARY.md` con el estado del proyecto |
+| `pnpm backup` | Backup completo de la BD |
+| `pnpm backup:schema` | Backup solo del esquema |
+| `pnpm backup:data` | Backup solo de los datos |
+
+---
+
+## 📁 Estructura del proyecto
+
+```
+src/
+├── components/
+│   ├── ui/              # Componentes base (Shadcn/ui) — genéricos, sin lógica de negocio
+│   ├── CVUploadDialog.tsx   # Upload + extracción + análisis + resultados
+│   ├── Header.tsx, Hero.tsx, Features.tsx, ...
+├── pages/               # Index, Auth, AdminPrompts, NotFound
+├── hooks/               # useAuth, use-toast, use-mobile
+├── services/
+│   ├── cvAnalyzer.ts    # Servicio de análisis (exportable, agnóstico al framework)
+│   └── cvStorage.ts     # Persistencia de análisis en Supabase
+├── integrations/supabase/  # Cliente y tipos generados
+docs/                     # Documentación técnica (CV Analyzer Service, backups)
+examples/                 # Ejemplos de uso del servicio de análisis
+scripts/                  # Summary automático y backups de BD
+supabase/                 # Config y Edge Functions
+```
+
+---
+
+## 📤 Exportar el servicio de análisis
+
+El analizador de CVs está desacoplado de la UI y puede reusarse en otro proyecto. Ver:
+
+- [`docs/CV_ANALYZER_SERVICE.md`](docs/CV_ANALYZER_SERVICE.md) — Documentación completa del servicio
+- [`examples/cv-analyzer-examples.ts`](examples/cv-analyzer-examples.ts) — 7 ejemplos prácticos
+- [`README_CV_ANALYZER_EXPORT.md`](README_CV_ANALYZER_EXPORT.md) — Guía de exportación paso a paso
+
+---
+
+## 🌐 Deploy
+
+- **Lovable**: Share → Publish (hosting integrado).
+- **Vercel**: soportado. El proyecto usa `pnpm` (lockfile v9, `packageManager` fijado en `package.json`); Vercel detecta el package manager automáticamente.
+
+---
+
+## 🔐 Seguridad
+
+- Claves de IA solo como secretos de Edge Function, nunca en el frontend.
+- Roles en tabla dedicada (`user_roles`), validación server-side con `has_role()`.
+- RLS en todas las tablas de usuario; nunca exponer datos cruzados entre usuarios.
+- Claves sensibles (API keys, tokens) siempre en variables de entorno o secretos — nunca en el código.
