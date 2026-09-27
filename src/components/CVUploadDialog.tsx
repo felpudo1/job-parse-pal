@@ -266,7 +266,7 @@ const CVUploadDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" variant="hero" className="group">
+        <Button size="lg" variant="hero" className="group w-full">
           <Upload className="mr-2 h-5 w-5" />
           Start Analyzing CVs
           <svg className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
