@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Upload, FileText, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { saveCVAnalysis } from "@/services/cvStorage";
 
 // Import DOCX library
 import mammoth from 'mammoth';
@@ -66,6 +68,7 @@ const CVUploadDialog = () => {
   const [open, setOpen] = useState(false);
   const [selectedLLM, setSelectedLLM] = useState<'gemini' | 'perplexity'>('gemini');
   const { toast } = useToast();
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const extractTextFromPDF = async (file: File): Promise<string> => {
@@ -215,10 +218,26 @@ const CVUploadDialog = () => {
       if (data.success) {
         setAnalysis(data.analysis);
         setCurrentView('analysis');
-        toast({
-          title: "Análisis Completado",
-          description: "El análisis del CV ha sido generado",
-        });
+        if (user) {
+          try {
+            await saveCVAnalysis({
+              userId: user.id,
+              fileName: file?.name ?? 'cv',
+              fileType: file?.type || 'unknown',
+              data: extractedData,
+              analysis: data.analysis,
+            });
+            toast({ title: "Análisis guardado", description: "Quedó guardado en tu historial" });
+          } catch (saveErr: any) {
+            console.error('Error guardando análisis:', saveErr);
+            toast({ title: "Análisis listo, pero no se pudo guardar", description: saveErr.message, variant: "destructive" });
+          }
+        } else {
+          toast({
+            title: "Análisis Completado",
+            description: "Iniciá sesión o registrate para guardar este análisis en tu historial",
+          });
+        }
       } else {
         throw new Error(data.error || 'Error desconocido');
       }

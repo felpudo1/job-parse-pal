@@ -38,7 +38,7 @@ const Auth = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -49,8 +49,10 @@ const Auth = () => {
     setLoading(false);
     if (error) {
       toast({ title: "Error de registro", description: error.message, variant: "destructive" });
+    } else if (!data.session) {
+      toast({ title: "Revisá tu email", description: "Te enviamos un link para confirmar la cuenta." });
     } else {
-      toast({ title: "Cuenta creada", description: "Ya podés iniciar sesión." });
+      toast({ title: "Cuenta creada", description: "Sesión iniciada." });
     }
   };
 
