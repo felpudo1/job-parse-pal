@@ -24,8 +24,11 @@ const Header = () => {
               </div>
               <span className="text-xl font-bold text-foreground">CVAnalyzer</span>
             </div>
-            <DBStatsBadge />
-            <GitVersionBadge />
+            {/* Badges de estado: solo en desktop para que el header no desborde en móvil */}
+            <div className="hidden md:flex items-center gap-2">
+              <DBStatsBadge />
+              <GitVersionBadge />
+            </div>
           </div>
 
           {/* Desktop Navigation */}
